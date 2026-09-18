@@ -1,5 +1,9 @@
+x-readest-profile: &readest-profile
+  profiles: ["${READEST_COMPOSE_PROFILE:-readest}"]
+
 services:
   client:
+    <<: *readest-profile
     image: ghcr.io/readest/readest:0.12.8
     container_name: readest
     env_file: ./data/.env
@@ -15,6 +19,7 @@ services:
     restart: unless-stopped
 
   db:
+    <<: *readest-profile
     image: supabase/postgres:15.8.1.085
     container_name: readest-db
     env_file: ./data/.env
@@ -42,6 +47,7 @@ services:
     restart: unless-stopped
 
   kong:
+    <<: *readest-profile
     image: kong:2.8.1
     container_name: readest-kong
     env_file: ./data/.env
@@ -58,6 +64,7 @@ services:
     restart: unless-stopped
 
   auth:
+    <<: *readest-profile
     image: supabase/gotrue:v2.185.0
     container_name: readest-auth
     env_file: ./data/.env
@@ -74,6 +81,7 @@ services:
     restart: unless-stopped
 
   rest:
+    <<: *readest-profile
     image: postgrest/postgrest:v14.3
     container_name: readest-rest
     env_file: ./data/.env
@@ -87,6 +95,7 @@ services:
     restart: unless-stopped
 
   minio:
+    <<: *readest-profile
     image: quay.io/minio/minio:latest
     container_name: readest-minio
     env_file: ./data/.env
@@ -103,6 +112,7 @@ services:
     restart: unless-stopped
 
   minio-setup:
+    <<: *readest-profile
     image: quay.io/minio/mc:latest
     container_name: readest-minio-setup
     env_file: ./data/.env
