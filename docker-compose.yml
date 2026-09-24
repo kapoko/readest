@@ -4,7 +4,7 @@ x-readest-profile: &readest-profile
 services:
   client:
     <<: *readest-profile
-    image: ghcr.io/readest/readest:0.12.8
+    image: ghcr.io/readest/readest:0.12.10
     container_name: readest
     env_file: ./data/.env
     environment:
