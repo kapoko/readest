@@ -113,7 +113,7 @@ services:
 
   minio-setup:
     <<: *readest-profile
-    image: quay.io/minio/mc:latest
+    image: docker.io/pgsty/mc:RELEASE.2026-08-04T00-00-00Z
     container_name: readest-minio-setup
     env_file: ./data/.env
     depends_on:
