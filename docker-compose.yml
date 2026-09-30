@@ -96,7 +96,7 @@ services:
 
   minio:
     <<: *readest-profile
-    image: quay.io/minio/minio:latest
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     container_name: readest-minio
     env_file: ./data/.env
     command: server /data
