@@ -4,13 +4,13 @@ x-readest-profile: &readest-profile
 services:
   client:
     <<: *readest-profile
-    image: ghcr.io/readest/readest:0.12.10
+    image: ghcr.io/readest/readest:0.12.16
     container_name: readest
     env_file: ./data/.env
     environment:
       SUPABASE_URL: http://kong:8000
       S3_ENDPOINT: http://minio:9000
-      API_BASE_URL: ""
+      API_BASE_URL: http://localhost:3030
     ports:
       - "3030:3000"
     depends_on:
@@ -26,6 +26,7 @@ services:
     environment:
       POSTGRES_HOST: /var/run/postgresql
       PGPORT: 5432
+      POSTGRES_PORT: 5432
     command:
       - postgres
       - -c
@@ -96,12 +97,14 @@ services:
 
   minio:
     <<: *readest-profile
+    # Keep the pgsty registry until the upstream quay.io images are available.
     image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     container_name: readest-minio
     env_file: ./data/.env
-    command: server /data
+    command: server --console-address ":9001" /data
     ports:
       - "9000:9000"
+      - "9001:9001"
     volumes:
       - ./data/minio:/data
     healthcheck:
@@ -113,6 +116,7 @@ services:
 
   minio-setup:
     <<: *readest-profile
+    # Keep the pgsty registry until the upstream quay.io images are available.
     image: docker.io/pgsty/mc:RELEASE.2026-08-04T00-00-00Z
     container_name: readest-minio-setup
     env_file: ./data/.env
@@ -121,6 +125,6 @@ services:
         condition: service_healthy
     entrypoint: >
       /bin/sh -c "
-      mc alias set readest http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      mc mb --ignore-existing readest/$$S3_BUCKET_NAME
+      mc alias set myminio http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing myminio/$$S3_BUCKET_NAME
       "
