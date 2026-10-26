@@ -14,8 +14,12 @@ services:
     ports:
       - "3030:3000"
     depends_on:
-      - kong
-      - minio
+      kong:
+        condition: service_started
+      minio:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   db:
@@ -46,6 +50,28 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+
+  migrate:
+    <<: *readest-profile
+    image: supabase/postgres:15.8.1.085
+    container_name: readest-migrate
+    env_file: ./data/.env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        /migrate/apply-migrations.sh
+        PGPASSWORD="$$POSTGRES_PASSWORD" psql --no-password --no-psqlrc -h "$$POSTGRES_HOST" -p "$$POSTGRES_PORT" -U supabase_admin -d "$$POSTGRES_DB" -c "NOTIFY pgrst, 'reload schema'"
+    volumes:
+      - ./readest/docker/volumes/db/migrations:/readest-migrations:ro
+      - ./readest/docker/volumes/db/apply-migrations.sh:/migrate/apply-migrations.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   kong:
     <<: *readest-profile
@@ -79,6 +105,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   rest:
@@ -93,6 +121,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   minio:
